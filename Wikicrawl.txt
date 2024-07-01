@@ -1,0 +1,44 @@
+import requests
+import base64
+import json
+import bs4
+import pandas as pd
+import pprint as pp
+from azure.devops.connection import Connection
+from msrest.authentication import BasicAuthentication
+from requests_oauthlib import OAuth2Session
+
+PAT = "myPAT"
+
+# URL for listing all wikis in the project
+organization = "o365exchange"  # replace with your organization name
+project = "IP%20Engineering"  # replace with your project name
+
+list_wikis_url = f"https://dev.azure.com/{organization}/{project}/_apis/wiki/wikis?api-version=7.1-preview.2"
+
+# Encode the PAT for Basic Authentication
+token = base64.b64encode(f":{PAT}".encode("utf-8")).decode("utf-8")
+
+# Set up the headers with the Base64 encoded PAT for authentication
+headers = {
+    'Authorization': f'Basic {token}', 
+    "Content-Type": "application/json"
+}
+
+# Set up for listing all pages in the 'IP Engineering.wiki' wikis
+wiki_id = "db2ead7a-d607-492b-ad78-8dc55a059bfa"
+pages_url = f"https://dev.azure.com/{organization}/{project}/_apis/wiki/wikis/{wiki_id}/pagesbatch?api-version=7.2-preview.1"
+all_pages = []
+
+
+data = {
+    #"top": 100,  # Set to maximum valid value
+    "continuationToken": None,
+    #"pageViewsForDays": 30
+    "x-MS-ContinuationToken": 97
+}
+response = requests.post(pages_url, headers=headers, data=json.dumps(data))
+
+print(response)
+
+response.json()
